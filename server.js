@@ -21,7 +21,7 @@ const db = mysql.createConnection(
 
 //Create a set of inquirer prompts to navigate through the database
 
-//put this in a function so it can continually call itself until quit is selected
+// Nav function that will be called after main menu selections to either return to main menu or exit inquirer
 const Nav = () => {
     inquirer.prompt([
         {
@@ -40,7 +40,7 @@ const Nav = () => {
     })
 }
 
-
+// Main inquirer function, asks user what they'd like to do and behaves accordingly
 const MainMenu = () => {
 inquirer.prompt([
     {
@@ -51,7 +51,9 @@ inquirer.prompt([
     },
    
 ]).then((data) =>
+//If statements depending on what user selected
 {
+    //Show departments table
     if(data.options === 'View all departments'){
         db.query('SELECT * FROM departments', function (err, results) {
             console.log(results);
@@ -59,6 +61,7 @@ inquirer.prompt([
           });
         Nav();
     }
+    //Show roles table
     if(data.options === 'View all roles'){
         db.query('SELECT * FROM roles', function (err, results) {
             console.log(results);
@@ -66,6 +69,7 @@ inquirer.prompt([
           });
         Nav();
     }
+    //Show employees table
     if(data.options === 'View all employees'){
         db.query('SELECT * FROM employees', function (err, results) {
             console.log(results);
@@ -73,13 +77,16 @@ inquirer.prompt([
           });
         Nav();
     }
+    //Allows user to add a department
     if(data.options === 'Add a department'){
+        //Prompt for department info
         inquirer.prompt([
             {
                 type: 'input',
                 message: 'Enter new department name',
                 name: 'department'
             }
+            //Create department
         ]).then((newDepartment)=>{
             console.log('-------------New department added--------------')
             console.log(newDepartment)
@@ -87,7 +94,9 @@ inquirer.prompt([
         }).then(()=> Nav())
         
     }
+    //Allowd user to add a new role
     if(data.options === 'Add a role'){
+        //Shows departments for so user can reference an id
         db.query('SELECT * FROM departments', function (err, results) {
             console.log(results);
             console.log(err);
@@ -108,6 +117,7 @@ inquirer.prompt([
                 message: 'Enter the id (shown above) of the department that this role belongs too',
                 name: 'department'
             }
+            //Create new role based on entered information
         ]).then((newRole) => 
         {
             console.log('------------New role added-------------')
@@ -115,7 +125,9 @@ inquirer.prompt([
             db.query(`INSERT INTO roles (job_title, salary, department_id) VALUES (?,?,?)`, [newRole.job_title, newRole.salary, newRole.department])
         }).then(()=> Nav());
     }
+        //Allows user to add a new employee
     if(data.options === 'Add an employee'){
+        //Prompts for employee data
         inquirer.prompt([
             {
                 type: 'input',
@@ -142,18 +154,21 @@ inquirer.prompt([
                 message: 'Who is this employees manager?',
                 name: 'manager'
             }
+            //Creates new employee
         ]).then((newEmployee) => {
             console.log('-----------New Employee Added------------')
             console.log(newEmployee)
             db.query(`INSERT INTO employees (first_name, last_name, job_title, salary, manager) VALUES (?,?,?,?,?)`, [newEmployee.first_name, newEmployee.last_name, newEmployee.job_title, newEmployee.salary, newEmployee.manager])
         }).then(()=> Nav());
     }
-
+        //Allows user to update employee role
     if(data.options === 'Update an employee role'){
+        //Shows all current employees so user can call the correct one
         db.query('SELECT * FROM employees', function (err, results) {
             console.log(results);
             console.log(err);
           });
+          //Employee data input
         inquirer.prompt([
             {
                 type: 'input',
@@ -170,7 +185,7 @@ inquirer.prompt([
                 message: 'Enter the employees new salary',
                 name: 'updated_salary'
             }
-
+            //Updates selected employee based on id
         ]).then((employee_update)=>{
             db.query('UPDATE employees SET job_title = ?, salary = ? WHERE id = ?',[employee_update.updated_job_title, employee_update.updated_salary, employee_update.employee_id])
 
